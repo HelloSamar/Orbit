@@ -76,6 +76,19 @@ body {
 .today-label-text { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .today-label-date { font-size: .82rem; font-weight: 700; color: var(--text); }
 .today-none { font-size: .82rem; color: var(--muted); padding: 4px 2px; }
+.planner { background:var(--surface); border:1px solid var(--s2); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; gap:10px; box-shadow:0 1px 4px rgba(20,22,32,.04); }
+.plan-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+.plan-card { border:1px solid var(--s2); background:var(--bg); border-radius:11px; padding:9px 8px; min-width:0; }
+.plan-count { font-size:1.05rem; font-weight:800; line-height:1; }
+.plan-label { margin-top:4px; font-size:.66rem; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.quick-add { display:grid; grid-template-columns:1fr auto; gap:7px; align-items:center; }
+.quick-add .fi { padding:10px 12px; font-size:16px; }
+.quick-actions { display:flex; align-items:center; gap:6px; justify-content:space-between; }
+.quick-dates { display:flex; gap:5px; min-width:0; }
+.quick-date { border:0; background:var(--bg); color:var(--muted); border-radius:8px; padding:7px 9px; font-size:.72rem; font-weight:800; font-family:inherit; cursor:pointer; white-space:nowrap; }
+.quick-date.active { background:#dde6ff; color:var(--blue); }
+.quick-save { border:0; background:var(--blue); color:#fff; border-radius:9px; padding:8px 12px; font-size:.76rem; font-weight:800; font-family:inherit; cursor:pointer; white-space:nowrap; }
+.quick-save:active, .quick-date:active { transform:scale(.97); }
 .item-link { color: inherit; text-decoration: none; transition: color .12s; display: block; }
 .item-link:hover { color: var(--blue); }
 
@@ -534,11 +547,84 @@ const STATUS_CLASSES = ['s-done','s-on','s-behind','s-overdue','s-pending'];
 const CHIP_BG    = {done:'#dde6ff',on:'#d5f5e3',behind:'#fef3c7',overdue:'#fde0e4'};
 const CHIP_COLOR = {done:'#2545c0',on:'#0a7a3c',behind:'#92520c',overdue:'#a81d31'};
 
+function isScheduledOn(it, date) {
+  const dow = new Date(date+'T00:00:00').getDay();
+  if (it.scheduleType==='dates') return (it.scheduleDates||[]).includes(date);
+  if (it.scheduleType==='days')  return (it.scheduleDays||[]).includes(dow)&&date>=it.start&&date<=it.end;
+  return date>=it.start&&date<=it.end;
+}
+
 function isScheduledToday(it) {
-  const today=todayStr(), dow=new Date(today+'T00:00:00').getDay();
-  if (it.scheduleType==='dates') return (it.scheduleDates||[]).includes(today);
-  if (it.scheduleType==='days')  return (it.scheduleDays||[]).includes(dow)&&today>=it.start&&today<=it.end;
-  return today>=it.start&&today<=it.end;
+  return isScheduledOn(it, todayStr());
+}
+
+function addDaysStr(date, days) {
+  const d = new Date(date+'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0,10);
+}
+
+function incompleteOn(date) {
+  return D.items.filter(i => i.completed < i.target && isScheduledOn(i, date));
+}
+
+function renderPlanner(todayItems) {
+  const today = todayStr();
+  const tomorrow = addDaysStr(today, 1);
+  const todayIds = new Set(todayItems.map(i => i.id));
+  const tomorrowItems = incompleteOn(tomorrow).filter(i => !todayIds.has(i.id));
+  const upcoming = D.items.filter(i => {
+    if (i.completed >= i.target || todayIds.has(i.id)) return false;
+    for (let n = 1; n <= 7; n++) if (isScheduledOn(i, addDaysStr(today, n))) return true;
+    return false;
+  });
+  return `<div class="planner">
+    <div class="plan-grid">
+      <div class="plan-card"><div class="plan-count">${todayItems.length}</div><div class="plan-label">Today</div></div>
+      <div class="plan-card"><div class="plan-count">${tomorrowItems.length}</div><div class="plan-label">Tomorrow</div></div>
+      <div class="plan-card"><div class="plan-count">${upcoming.length}</div><div class="plan-label">Next 7</div></div>
+    </div>
+    <div class="quick-add">
+      <input class="fi" id="quickTask" placeholder="Add a quick task" autocomplete="off">
+      <button class="quick-save" id="quickAddBtn">Add</button>
+    </div>
+    <div class="quick-actions">
+      <div class="quick-dates">
+        <button class="quick-date active" data-offset="0">Today</button>
+        <button class="quick-date" data-offset="1">Tomorrow</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function wirePlanner(container) {
+  const input = container.querySelector('#quickTask');
+  const add = container.querySelector('#quickAddBtn');
+  if (!input || !add) return;
+  container.querySelectorAll('.quick-date').forEach(btn => btn.addEventListener('click', () => {
+    container.querySelectorAll('.quick-date').forEach(b => b.classList.toggle('active', b === btn));
+    input.focus();
+  }));
+  const create = () => {
+    const title = input.value.trim();
+    if (!title) { input.focus(); return; }
+    let cat = D.categories.find(c => c.name.toLowerCase() === 'tasks');
+    if (!cat) {
+      cat = { id: uid(), name: 'Tasks', color: '#3a5ff0' };
+      D.categories.push(cat);
+    }
+    const offset = parseInt(container.querySelector('.quick-date.active')?.dataset.offset || '0');
+    const date = addDaysStr(todayStr(), offset);
+    D.items.push({
+      id: uid(), title, category: cat.id, target: 1, completed: 0, unit: 'tasks',
+      scheduleType: 'dates', start: date, end: date, scheduleDays: [], scheduleDates: [date], url: '', log: []
+    });
+    save();
+    render();
+    toast(offset ? 'Added for tomorrow ✓' : 'Added for today ✓');
+  };
+  add.addEventListener('click', create);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') create(); });
 }
 
 function scheduleLabel(it) {
@@ -888,6 +974,7 @@ function render() {
   ].filter(Boolean).join(' · ');
 
   let html = '';
+  html += renderPlanner(todayItems);
 
   // 1 ── TODAY
   const dateDisp = new Date(today+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
@@ -978,6 +1065,7 @@ function render() {
   html += renderReminderBar();
 
   el.innerHTML = html;
+  wirePlanner(el);
   wireReminderBar(el);
 
   // wire section toggles

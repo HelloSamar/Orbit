@@ -1,4 +1,4 @@
-const CACHE = 'orbit-v1';
+const CACHE = 'orbit-v2';
 const ASSETS = [
   './index.html',
   './manifest.json',
