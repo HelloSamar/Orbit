@@ -43,6 +43,16 @@ body {
   overscroll-behavior-y: none;
 }
 
+.app-head { width:100%; max-width:420px; display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
+.brand { display:flex; align-items:center; gap:10px; min-width:0; }
+.brand-mark { width:38px; height:38px; border-radius:12px; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(58,95,240,.22); }
+.brand-mark svg { width:20px; height:20px; }
+.brand-copy { min-width:0; }
+.brand-title { font-size:1.18rem; font-weight:800; letter-spacing:.01em; }
+.brand-sub { font-size:.76rem; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.status-pill { border:1px solid var(--s2); background:var(--surface); color:var(--muted); border-radius:999px; padding:7px 10px; font-size:.68rem; font-weight:800; display:flex; align-items:center; gap:6px; box-shadow:0 1px 4px rgba(20,22,32,.04); white-space:nowrap; }
+.status-pill::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--s2); }
+.status-pill.on::before { background:var(--green); }
 .list { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 8px; }
 
 /* Reminder bar — collapsed mode */
@@ -200,12 +210,16 @@ body {
 .pct { font-size: .88rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Empty */
-.empty-state { text-align: center; padding: 48px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.empty-state { text-align: center; padding: 34px 0 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .empty-icon { width: 52px; height: 52px; background: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(20,22,32,.08); }
 .empty-icon svg { width: 22px; height: 22px; color: var(--muted); }
 .empty-title { font-size: 1.05rem; font-weight: 600; }
 .empty-sub { font-size: .88rem; color: var(--muted); }
 .empty-cta { margin-top: 4px; padding: 9px 22px; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-size: .88rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+.empty-suggestions { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:4px; }
+.empty-suggestion { border:1px solid color-mix(in srgb, var(--sc) 45%, var(--s2)); background:var(--surface); color:var(--text); border-radius:11px; padding:10px 12px; font-size:.8rem; font-weight:800; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; }
+.empty-suggestion::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--sc); flex-shrink:0; }
+.empty-suggestion:active { transform:scale(.98); background:var(--s2); }
 .empty-cta:active { opacity: .8; transform: scale(.97); }
 
 /* FAB */
@@ -322,6 +336,18 @@ body {
 </style>
 </head>
 <body>
+<header class="app-head">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M4 12c2.5-5 13.5-5 16 0"/><path d="M4 12c2.5 5 13.5 5 16 0"/></svg>
+    </div>
+    <div class="brand-copy">
+      <div class="brand-title">Orbit</div>
+      <div class="brand-sub" id="headSub">Track today</div>
+    </div>
+  </div>
+  <div class="status-pill" id="headStatus">Local</div>
+</header>
 <div class="list" id="list"></div>
 <div class="toast" id="toast"></div>
 <div class="undo-toast" id="undoToast">
@@ -342,8 +368,8 @@ body {
 </button>
 <div id="syncDot" style="
   position:fixed;
-  right:max(20px, var(--sar));
-  bottom:max(76px, calc(var(--sab) + 70px));
+  right:max(40px, var(--sar));
+  bottom:calc(max(24px, var(--sab)) + 110px);
   width:9px;height:9px;border-radius:50%;
   background:var(--s2);
   transition:background .3s;
@@ -442,6 +468,7 @@ function setSyncIndicator(state) {
   const s = map[state] || map.off;
   el.style.background = s.bg;
   el.title = s.title;
+  if (typeof renderHeader === 'function') renderHeader();
 }
 
 /* ── SUGGESTED categories shown at first run ── */
@@ -780,7 +807,21 @@ function wireReminderBar(container) {
 /* collapsible section state */
 const _collapsed = {};
 
+function renderHeader() {
+  const sub = document.getElementById('headSub');
+  const status = document.getElementById('headStatus');
+  const today = new Date(todayStr()+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  const due = D.items.filter(i=>isScheduledToday(i)&&i.completed<i.target).length;
+  if (sub) sub.textContent = due ? `${due} due today · ${today}` : `Clear today · ${today}`;
+  if (status) {
+    const on = !!(gistCfg.token && gistCfg.gistId);
+    status.textContent = on ? 'Sync on' : 'Local';
+    status.classList.toggle('on', on);
+  }
+}
+
 function render() {
+  renderHeader();
   const el = document.getElementById('list');
   if (!D.reminders) D.reminders = [];
 
@@ -794,10 +835,18 @@ function render() {
           </svg>
         </div>
         <div class="empty-title">Nothing tracked yet</div>
-        <div class="empty-sub">${D.categories.length ? 'Add your first item to get started.' : 'Start by adding a category, then create your first item.'}</div>
-        <button class="empty-cta" id="emptyCta">${D.categories.length ? '+ Add Item' : '+ Add Category'}</button>
+        <div class="empty-sub">${D.categories.length ? 'Add your first item to get started.' : 'Pick a starting area and Orbit will set it up.'}</div>
+        ${!D.categories.length ? `<div class="empty-suggestions">${SUGGESTED_CATS.slice(0,4).map(c=>`<button class="empty-suggestion" data-name="${esc(c.name)}" data-color="${c.color}" style="--sc:${c.color}">${esc(c.name)}</button>`).join('')}</div>` : ''}
+        <button class="empty-cta" id="emptyCta">${D.categories.length ? '+ Add Item' : '+ Custom Category'}</button>
       </div>` + renderReminderBar();
     wireReminderBar(el);
+    el.querySelectorAll('.empty-suggestion').forEach(b => b.addEventListener('click', () => {
+      D.categories.push({ id: uid(), name: b.dataset.name, color: b.dataset.color });
+      save();
+      panelTab = 'items';
+      document.querySelectorAll('.ptab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'items'));
+      openPanel();
+    }));
     document.getElementById('emptyCta').addEventListener('click', () => {
       if (!D.categories.length) {
         panelTab = 'cats';
