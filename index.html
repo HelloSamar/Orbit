@@ -469,10 +469,11 @@ function status(it) {
   if (it.completed >= it.target) return 'done';
   const today = todayStr();
   if (it.scheduleType === 'dates') {
-    const passed = (it.scheduleDates||[]).filter(d=>d<=today).length;
-    const total  = (it.scheduleDates||[]).length;
+    const dates = it.scheduleDates || [];
+    const passed = dates.filter(d=>d<=today).length;
+    const total  = dates.length;
     if (!total) return 'on';
-    if (passed===total) return 'overdue';
+    if (dates[total - 1] < today) return 'overdue';
     return it.completed >= it.target*(passed/total)*0.9 ? 'on' : 'behind';
   }
   if (it.scheduleType === 'days') {
@@ -484,10 +485,14 @@ function status(it) {
       if (days.includes(d.getDay())) { total++; if(d<=now) passed++; }
     }
     if (!total) return 'on';
-    if (passed===total) return 'overdue';
+    let lastScheduled = '';
+    for (let d=new Date(end), iter=0; d>=start && iter<366; d.setDate(d.getDate()-1), iter++) {
+      if (days.includes(d.getDay())) { lastScheduled = d.toISOString().slice(0,10); break; }
+    }
+    if (lastScheduled && lastScheduled < today) return 'overdue';
     return it.completed >= it.target*(passed/total)*0.9 ? 'on' : 'behind';
   }
-  if (today>=it.end) return 'overdue';
+  if (today>it.end) return 'overdue';
   const s=new Date(it.start+'T00:00:00').getTime(), e=new Date(it.end+'T00:00:00').getTime(), n=new Date(today+'T00:00:00').getTime();
   return it.completed >= it.target*Math.max(0,(n-s)/Math.max(1,e-s))*0.9 ? 'on' : 'behind';
 }
