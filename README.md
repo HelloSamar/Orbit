@@ -1,8 +1,6 @@
 # Orbit 🪐
 
-Local network file sharing between your devices — no cloud, no account, no
-cables. Start it on one machine, scan a QR code from your phone, and drag
-files, photos, and text back and forth over your own Wi-Fi.
+Your own private AirDrop, for every device you own — no cloud, no cables, no account, no strangers in the middle. Start it on one machine, scan a QR code from your phone, and drag files, photos, and text back and forth over your own Wi-Fi.
 
 ![status](https://img.shields.io/badge/node-%3E%3D14-brightgreen) ![license](https://img.shields.io/badge/license-MIT-green)
 
