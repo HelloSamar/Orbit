@@ -1,17 +1,36 @@
-Orbit — your private AirDrop for every device you own.
+# Orbit
 
-Move files between your devices without cloud accounts, cables, or third parties.
+Private file sharing for the devices you actually own.
 
-Why Orbit
-- Private: transfers happen directly between your devices.
-- Simple: no setup, no accounts, no strangers in the middle.
-- Fast: peer-to-peer transfers optimized for local networks.
+Orbit is a direct, device-to-device transfer layer for moving files between your phone, laptop, tablet, and desktop — without cloud storage, account sign-ins, cables, or third-party intermediaries.
 
-Get started
-1. Install on each device (see SETUP.md).
-2. Open Orbit and sign into your devices using the local pairing code.
-3. Drag & drop files — they arrive on your other devices.
+Built for the modern personal tech stack.
 
-For developers
-- Repo: https://github.com/HelloSamar/Orbit
-- License: MIT
+## Why Orbit
+
+- Private by design: files move directly between your devices.
+- No cloud dependency: no account required, no network lock-in.
+- Frictionless: one-tap pairing, instant transfers, zero middleman.
+- Universal: works across the devices in your daily workflow.
+
+## The problem
+
+Today’s personal file transfer tools force users into fragmented ecosystems: cloud services, app accounts, device-specific limitations, and data exposure to providers they do not control.
+
+Orbit eliminates that friction.
+
+## The product
+
+Orbit gives every user a private, reliable way to move files across their own devices — fast, local, and without surrendering control of their data.
+
+## Built for users who value control
+
+Whether you're moving work files, personal media, or sensitive documents, Orbit is designed to keep the transfer local, private, and effortless.
+
+## Get started
+
+See SETUP.md for installation and local development steps.
+
+## License
+
+MIT
