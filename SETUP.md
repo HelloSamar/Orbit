@@ -1,29 +1,39 @@
-Setup — quick developer & user guide
+# Setup
 
-Prerequisites
-- Node.js 18+ (or the version specified in package.json)
+## Requirements
+
+- Node.js 18+
+- npm
 - Git
 
-Local dev
-1. Clone the repo
-   git clone https://github.com/HelloSamar/Orbit
-   cd Orbit
+## Install
 
-2. Install
-   npm install
+```bash
+git clone https://github.com/HelloSamar/Orbit.git
+cd Orbit
+npm install
+```
 
-3. Run
-   npm start
+## Run locally
 
-Building a release
-- Follow the scripts in package.json (npm run build) to create distributables.
+```bash
+npm start
+```
 
-Pairing devices
-- Run Orbit on both devices on the same local network.
-- Use the on-screen pairing code to link them — no accounts required.
+## Build
 
-Contributing
-- Open issues or PRs. Keep changes small and focused.
+```bash
+npm run build
+```
 
-Contact
-- https://github.com/HelloSamar/Orbit
+## Local pairing
+
+Orbit is designed to work across devices on the same local network. Start the app on each device and pair them using the local pairing flow.
+
+## Contributing
+
+We welcome contributors. Please open an issue before starting major work, and keep pull requests focused.
+
+## Support
+
+For questions or early access requests, open an issue in this repository.
