@@ -1,1 +1,127 @@
+<!DOCTYPE html>
+<html data-theme="dark" lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Orbit</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%90%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div id="nameModal">
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:20px; padding:32px 28px; width:min(360px,90vw); text-align:center;">
+      <div style="font-size:40px; margin-bottom:12px;">🪐</div>
+      <h2 style="margin:0 0 8px;">Welcome to Orbit</h2>
+      <p style="margin:0 0 24px; color:var(--muted);">What should other devices call you?</p>
+      <input id="nameInput" placeholder="My iPhone / My Laptop" maxlength="30" autocomplete="off" style="width:100%; padding:12px 16px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text); margin-bottom:16px;" />
+      <button class="btn-primary" data-action="set-name" style="width:100%;">Join Orbit</button>
+    </div>
+  </div>
 
+  <header>
+    <div class="brand"><span class="icon">🪐</span><span class="name">Orbit</span></div>
+    <div class="header-name" id="headerName"></div>
+    <div class="header-right">
+      <button class="icon-btn" data-action="toggle-qr" id="qrToggle" title="QR / Devices">📡</button>
+      <button class="icon-btn" data-action="toggle-theme" id="themeBtn">☀️</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar" class="sidebar">
+      <div class="panel">
+        <div class="panel-label">📱 Connect</div>
+        <div class="qr-wrap">
+          <img class="qr-img" src="{{QR}}" alt="QR code" />
+          <div class="qr-url">{{BASE_URL}}</div>
+          <div class="storage-wrap">
+            <div class="storage-head"><span id="storUsed">0 MB used</span><span id="storLimit">No limit</span></div>
+            <div class="storage-bar"><div class="storage-fill" id="storFill"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" style="flex:1;">
+        <div class="panel-label">📶 Online</div>
+        <div id="deviceList"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="tabs">
+        <button class="tab-btn active" data-action="switch-tab" data-tab="files">📁 Files</button>
+        <button class="tab-btn" data-action="switch-tab" data-tab="gallery">🖼 Gallery</button>
+        <button class="tab-btn" data-action="switch-tab" data-tab="clipboard">📋 Clipboard</button>
+        <button class="tab-btn" data-action="switch-tab" data-tab="history">📜 History</button>
+      </div>
+
+      <div id="pane-files" class="tab-pane active">
+        <div id="dropZone" class="upload-zone">
+          <div class="icon">📂</div>
+          <h3>Drop files here</h3>
+          <p>or tap to choose files</p>
+        </div>
+        <input id="fileInput" type="file" multiple class="hidden" />
+        <div class="upload-controls">
+          <div class="send-to-wrap">
+            <label>To:</label>
+            <select id="sendTo"><option value="everyone">Everyone</option></select>
+          </div>
+          <button class="btn-upload" data-action="trigger-upload">Choose &amp; Send</button>
+          <button class="btn-danger" id="cancelUploadBtn" data-action="cancel-upload" style="display:none;">✕ Cancel</button>
+        </div>
+        <div id="progressWrap" class="progress-wrap">
+          <div class="progress-bar"><div id="progressBar" class="progress-fill"></div></div>
+          <div class="progress-label"><span id="progressText">Uploading…</span><span id="progressPct">0%</span></div>
+        </div>
+        <div id="fileList" class="file-list"></div>
+      </div>
+
+      <div id="pane-gallery" class="tab-pane">
+        <div id="galleryGrid" class="gallery-grid"></div>
+      </div>
+
+      <div id="pane-clipboard" class="tab-pane">
+        <div class="text-compose">
+          <div class="panel-label" style="margin:0;">✏️ Send Text</div>
+          <textarea id="textInput" maxlength="20000" placeholder="Type something to share…"></textarea>
+          <div class="text-compose-footer">
+            <div class="send-to-wrap">
+              <label>To:</label>
+              <select id="textSendTo"><option value="everyone">Everyone</option></select>
+            </div>
+            <button class="btn-upload" data-action="send-text">Send →</button>
+          </div>
+        </div>
+        <div id="textList" class="text-list"></div>
+      </div>
+
+      <div id="pane-history" class="tab-pane">
+        <div id="histList" class="hist-list"></div>
+      </div>
+    </main>
+  </div>
+
+  <div id="acceptModal">
+    <div class="accept-box">
+      <h2>📨 Incoming Files</h2>
+      <div id="acceptFrom" class="accept-from"></div>
+      <ul id="acceptFiles" class="accept-files"></ul>
+      <div class="accept-actions">
+        <button id="acceptBtn" class="btn-primary">✓ Accept</button>
+        <button id="declineBtn" class="btn-danger">✕ Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightbox">
+    <button id="lb-close" class="lb-close">✕</button>
+    <button id="lb-prev" class="lb-nav">‹</button>
+    <img id="lb-img" src="" alt="" />
+    <button id="lb-next" class="lb-nav">›</button>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
