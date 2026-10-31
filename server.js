@@ -12,8 +12,10 @@ const crypto = require('crypto');
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PIN = process.env.ORBIT_PIN ? String(process.env.ORBIT_PIN) : '';
-const MAX_FILE = (Number(process.env.ORBIT_MAX_FILE_MB) || 500) * 1024 * 1024;
-const STORAGE_LIMIT = (Number(process.env.ORBIT_STORAGE_GB) || 2) * 1024 * 1024 * 1024;
+// 0 = unlimited. By default there is no per-file or total cap; Orbit only refuses an upload
+// when the disk itself does not have enough free space.
+const MAX_FILE = (Number(process.env.ORBIT_MAX_FILE_MB) || 0) * 1024 * 1024;
+const STORAGE_LIMIT = (Number(process.env.ORBIT_STORAGE_GB) || 0) * 1024 * 1024 * 1024;
 const FILE_TTL = (Number(process.env.ORBIT_TTL_MIN) || 60) * 60_000;
 const SHARE = path.join(__dirname, 'shared');
 const STORED_RE = /^[0-9a-f]{12}_/;
@@ -64,6 +66,15 @@ function cleanName(s) {
 
 function cleanLabel(v, fallback = 'Unknown') {
   return cleanName(v || '').slice(0, 30) || fallback;
+}
+
+function freeDisk() {
+  try {
+    const st = fs.statfsSync(SHARE); // Node 18.15+
+    return Number(st.bavail) * Number(st.bsize);
+  } catch {
+    return Infinity;
+  }
 }
 
 function storageUsed() {
@@ -256,14 +267,19 @@ const upload = multer({
     destination: SHARE,
     filename: (req, file, cb) => cb(null, `${uid()}_${safeFileName(file.originalname)}`)
   }),
-  limits: { fileSize: MAX_FILE, files: 20 }
+  limits: { ...(MAX_FILE ? { fileSize: MAX_FILE } : {}), files: 20 }
 });
 
 function uploadGate(req, res, next) {
   const id = who(req);
   if (!id || !devices[id]) return res.status(401).json({ error: 'Unknown device — reload the page' });
   const len = Number(req.headers['content-length']) || 0;
-  if (storageUsed() + len > STORAGE_LIMIT) return res.status(507).json({ error: 'Orbit storage is full' });
+  if (STORAGE_LIMIT && storageUsed() + len > STORAGE_LIMIT) {
+    return res.status(507).json({ error: 'Orbit storage limit reached' });
+  }
+  if (len > freeDisk() - 200 * 1024 * 1024) {
+    return res.status(507).json({ error: 'Not enough free disk space on the host computer' });
+  }
   req.devId = id;
   req.me = pubOf(id);
   next();
@@ -281,7 +297,7 @@ app.post('/api/heartbeat', needDevice, (req, res) => {
     me: req.me,
     devices: liveDevices(),
     pending: pending[req.me] || [],
-    storage: { used: storageUsed(), limit: STORAGE_LIMIT }
+    storage: { used: storageUsed(), limit: STORAGE_LIMIT, free: freeDisk() === Infinity ? 0 : freeDisk() }
   });
 });
 
@@ -637,7 +653,7 @@ async function buildHTML() {
           <img class="qr-img" src="${qrDataURL}" alt="QR code" />
           <div class="qr-url">${BASE_URL}</div>
           <div class="storage-wrap">
-            <div class="storage-head"><span id="storUsed">0 MB used</span><span id="storLimit">2 GB</span></div>
+            <div class="storage-head"><span id="storUsed">0 MB used</span><span id="storLimit">No limit</span></div>
             <div class="storage-bar"><div class="storage-fill" id="storFill"></div></div>
           </div>
         </div>
@@ -861,8 +877,9 @@ async function buildHTML() {
     function updateStorage(s) {
       if (!s) return;
       document.getElementById('storUsed').textContent = fmtSize(s.used) + ' used';
-      document.getElementById('storLimit').textContent = fmtSize(s.limit);
-      var pct = Math.min(100, (s.used / s.limit) * 100 || 0);
+      document.getElementById('storLimit').textContent = s.limit ? fmtSize(s.limit) : (s.free ? fmtSize(s.free) + ' free' : 'No limit');
+      var cap = s.limit || (s.free ? s.used + s.free : 0);
+      var pct = cap ? Math.min(100, (s.used / cap) * 100) : 0;
       document.getElementById('storFill').style.width = pct + '%';
     }
 
@@ -1318,6 +1335,11 @@ const server = app.listen(PORT, HOST, () => {
   }
   console.log(PIN ? '   🔒 PIN protection: ON\n' : '   ⚠️  No PIN set — anyone on this network can use Orbit (set ORBIT_PIN)\n');
 });
+
+// Node's default 5-minute request timeout would kill large uploads on slow Wi-Fi.
+server.requestTimeout = 0;
+server.timeout = 0;
+server.headersTimeout = 60_000;
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
