@@ -14,7 +14,7 @@ npm install
 npm start
 ```
 
-Windows: double-click `START Orbit.bat`. macOS/Linux: `./"START Orbit.sh"`.
+Windows: double-click `START Orbit.bat`. macOS/Linux: `bash "START Orbit.sh"`.
 
 Open the printed address (or scan the QR code in the sidebar) on any device on the same network.
 
@@ -68,4 +68,3 @@ npm test        # end-to-end smoke tests
 ## License
 
 MIT
-
