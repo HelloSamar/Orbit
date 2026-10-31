@@ -7,6 +7,10 @@
 - Cross-site request blocking, security headers, filename sanitization, per-IP rate limit
 - Only the uploader (or accepted target) can delete/rename files; history is private per device
 
+### Large files
+- No per-file or total size limit by default (set `ORBIT_MAX_FILE_MB` / `ORBIT_STORAGE_GB` to add one); uploads are refused only if the host disk is full
+- Disabled Node's 5-minute request timeout so multi-GB uploads on slow Wi-Fi don't fail
+
 ### Fixes
 - Texts from other devices now appear automatically
 - Failed/oversized uploads show an error instead of "Uploaded!"
@@ -24,3 +28,9 @@
 - Downloads are never cached by the browser (`Cache-Control: no-store`)
 - Shared files are wiped on Ctrl+C, closing the console window, and any normal exit; any leftovers from a hard kill are removed on next start
 - Orbit writes no log files; history/texts live in memory only
+
+
+
+
+
+
