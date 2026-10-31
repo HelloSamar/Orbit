@@ -15,7 +15,17 @@ jobs:
       - run: npm ci
       - name: Install ldid (lets pkg ad-hoc sign the macOS arm64 binary)
         run: sudo apt-get update && sudo apt-get install -y ldid || echo "ldid unavailable"
-      - run: npx pkg . --out-path dist
+      - name: Build binaries (no V8 bytecode, so cross-platform builds run everywhere)
+        run: npm run build:exe
+      - name: Smoke-test the Linux binary in HTTPS mode
+        run: |
+          mkdir -p /tmp/orbit-test && cp dist/orbit-linux-x64 /tmp/orbit-test/orbit
+          cd /tmp/orbit-test
+          PORT=4555 ORBIT_HTTPS=1 ORBIT_PIN=0 ./orbit > out.log 2>&1 &
+          for i in $(seq 1 30); do curl -sk https://localhost:4555/ -o /dev/null && break; sleep 1; done
+          curl -skf https://localhost:4555/ -o /dev/null || { cat out.log; exit 1; }
+          curl -skf https://localhost:4555/static/app.js -o /dev/null || { cat out.log; exit 1; }
+          pkill orbit || true
       - name: Package
         run: |
           cd dist
