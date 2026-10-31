@@ -1,39 +1,10 @@
 # Setup
 
-## Requirements
+1. Install Node.js 18 or newer.
+2. `npm install`
+3. `npm start` (optionally with `ORBIT_PIN=1234`)
+4. On another device on the same Wi-Fi, scan the QR code or open the LAN address shown in the terminal.
 
-- Node.js 18+
-- npm
-- Git
+Firewall prompt on Windows/macOS: allow Node.js on **private** networks.
 
-## Install
-
-```bash
-git clone https://github.com/HelloSamar/Orbit.git
-cd Orbit
-npm install
-```
-
-## Run locally
-
-```bash
-npm start
-```
-
-## Build
-
-```bash
-npm run build
-```
-
-## Local pairing
-
-Orbit is designed to work across devices on the same local network. Start the app on each device and pair them using the local pairing flow.
-
-## Contributing
-
-We welcome contributors. Please open an issue before starting major work, and keep pull requests focused.
-
-## Support
-
-For questions or early access requests, open an issue in this repository.
+See README.md for all options.

@@ -1,26 +1,5 @@
-# Dependencies — always reinstalled via `npm install`, never commit these
 node_modules/
-
-# Runtime data — files people share land here, never commit user uploads
+.env
+npm-debug.log*
 shared/*
 !shared/.gitkeep
-
-# Reserved for future use
-data/*
-!data/.gitkeep
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-*.swp
-
-# Logs
-*.log
-npm-debug.log*
-
-# Env files, if ever added
-.env

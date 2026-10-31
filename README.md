@@ -1,61 +1,69 @@
-# Orbit — Early-stage startup
+# 🪐 Orbit
 
-Your devices. Your data. No cloud required.
+Private AirDrop-style sharing for the devices on your own Wi-Fi: files, text and clipboard.
+No cloud, no account, no cables. Everything stays on the computer running Orbit.
 
-Orbit is building a privacy-first, device-to-device transfer layer that makes moving files between your own devices effortless, local, and secure — without accounts, cables, or third-party infrastructure.
+## Quick start
 
-Mission
+Requires [Node.js 18+](https://nodejs.org).
 
-Enable people and teams to own their data flow: private, simple, and fast transfers across the devices they use every day.
+```bash
+git clone https://github.com/HelloSamar/Orbit.git
+cd Orbit
+npm install
+npm start
+```
 
-The problem
+Windows: double-click `START Orbit.bat`. macOS/Linux: `./"START Orbit.sh"`.
 
-File sharing today is split between ecosystems and cloud services that create friction, lock-in, and privacy risk. Users either contend with accounts and uploads or accept cumbersome cables and device-specific tools.
+Open the printed address (or scan the QR code in the sidebar) on any device on the same network.
 
-Our solution
+> **v2.0** — see [CHANGELOG.md](CHANGELOG.md). Orbit relays transfers through the host computer on your LAN (it is not peer-to-peer).
 
-Orbit is a local-first transfer platform for personal devices. Key points:
+## Features
 
-- Direct device-to-device transfers (peer-to-peer)
-- No cloud storage or accounts required
-- Simple pairing and one-click transfers
-- Designed for mobile + desktop workflows
+- Send files to everyone or to one specific device (the receiver must accept)
+- Drag-and-drop upload with progress, cancel, rename, delete
+- Image gallery with lightbox
+- Text/clipboard sharing
+- Per-device history, dark/light theme, optional PIN
 
-Why now
+## Configuration (environment variables)
 
-Personal tech is more fragmented than ever — multiple devices, different OSes, increasingly invasive cloud platforms. Users and teams are ready for simpler flows that restore privacy and control without sacrificing convenience.
+| Variable | Default | Meaning |
+|---|---|---|
+| `PORT` | `3000` | Port to listen on |
+| `HOST` | `0.0.0.0` | Interface to bind |
+| `ORBIT_PIN` | *(none)* | Require this PIN before anyone can use Orbit |
+| `ORBIT_HOST` | auto | IP shown in the QR code (override if auto-detect picks the wrong adapter) |
+| `ORBIT_MAX_FILE_MB` | `500` | Max size per file |
+| `ORBIT_STORAGE_GB` | `2` | Total storage cap |
+| `ORBIT_TTL_MIN` | `60` | Minutes before shared files auto-delete |
 
-Product status
+Example: `ORBIT_PIN=4821 PORT=8080 npm start` (PowerShell: `$env:ORBIT_PIN=4821; npm start`).
 
-- Early-stage (alpha). Core transfer flow implemented and being tested on local networks.
-- Priorities: reliability, cross-platform polish, UX simplification, and developer APIs for integrations.
+## Security model
 
-Traction & ask
+- Orbit speaks plain HTTP and is meant for a network you trust. **Set `ORBIT_PIN`** on shared Wi-Fi.
+- Each device has a secret ID known only to itself; other devices only see a hashed public ID, so private transfers can't be intercepted.
+- Files live in `shared/`, are indexed in memory, and are deleted after the TTL, on shutdown, or on restart.
+- Cross-site writes are blocked and filenames are sanitized.
+- Do not expose Orbit to the internet.
 
-- Seeking early testers, contributors, and partners to validate use cases and performance on real-world networks.
-- Open to conversations with potential partners and early-stage investors who share our privacy-first vision.
+## Development
 
-Roadmap (next 6–12 months)
+```bash
+npm run dev     # auto-restart on change
+npm run check   # syntax check
+npm test        # end-to-end smoke tests
+```
 
-1. Harden local pairing and transfer reliability
-2. Broaden platform support (mobile + desktop parity)
-3. Improve performance and large-file flows
-4. Developer APIs & integrations
-5. Early access program and partner pilots
+## Troubleshooting
 
-How to get involved
+- **Phone can't connect:** same Wi-Fi? Allow Node.js through your firewall. If the QR address is wrong, set `ORBIT_HOST`.
+- **Port in use:** run with `PORT=3001`.
+- **Copy button on http pages:** uses a fallback because browsers disable the Clipboard API outside HTTPS.
 
-- Try it: follow SETUP.md for local installs and dev runs.
-- Contribute: open issues or PRs for bugs and features.
-- Test & feedback: join the early access program by filing an issue titled "Early access / tester" with your platform and use case.
-- Partnership & investor inquiries: contact via the repository or open an issue labelled "partnership".
-
-Get started
-
-See SETUP.md for installation and local development steps.
-
-License
+## License
 
 MIT
-
-Repo: https://github.com/HelloSamar/Orbit
