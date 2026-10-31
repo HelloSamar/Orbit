@@ -1,6 +1,6 @@
 # 🪐 Orbit
 
-Private AirDrop-style sharing for the devices on your own Wi-Fi: files, text and clipboard.
+Private AirDrop-style sharing for the devices on your own Wi-Fi: files, text & clipboard.
 No cloud, no account, no cables. Everything stays on the computer running Orbit.
 
 ## Quick start
@@ -23,6 +23,7 @@ Open the printed address (or scan the QR code in the sidebar) on any device on t
 ## Features
 
 - Send files to everyone or to one specific device (the receiver must accept)
+- No file-size limit (only your free disk space), tested with multi-GB files
 - Drag-and-drop upload with progress, cancel, rename, delete
 - Image gallery with lightbox
 - Text/clipboard sharing
@@ -36,8 +37,8 @@ Open the printed address (or scan the QR code in the sidebar) on any device on t
 | `HOST` | `0.0.0.0` | Interface to bind |
 | `ORBIT_PIN` | *(none)* | Require this PIN before anyone can use Orbit |
 | `ORBIT_HOST` | auto | IP shown in the QR code (override if auto-detect picks the wrong adapter) |
-| `ORBIT_MAX_FILE_MB` | `500` | Max size per file |
-| `ORBIT_STORAGE_GB` | `2` | Total storage cap |
+| `ORBIT_MAX_FILE_MB` | `0` (no limit) | Max size per file |
+| `ORBIT_STORAGE_GB` | `0` (no limit) | Total storage cap |
 | `ORBIT_TTL_MIN` | `60` | Minutes before shared files auto-delete |
 
 Example: `ORBIT_PIN=4821 PORT=8080 npm start` (PowerShell: `$env:ORBIT_PIN=4821; npm start`).
@@ -67,3 +68,4 @@ npm test        # end-to-end smoke tests
 ## License
 
 MIT
+
