@@ -40,3 +40,4 @@ echo  Keep this window open. Ctrl+C to stop.
 echo.
 node server.js
 pause
+
