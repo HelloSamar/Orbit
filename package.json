@@ -1,20 +1,66 @@
 {
   "name": "orbit",
-  "version": "2.0.0",
-  "description": "Orbit — private local-network file, text & clipboard sharing between your own devices",
+  "version": "1.0.0",
+  "description": "Orbit — private local-network file, text and clipboard sharing between your own devices",
   "main": "server.js",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/HelloSamar/Orbit.git" },
-  "engines": { "node": ">=18" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HelloSamar/Orbit.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "check": "node --check server.js",
-    "test": "node test/smoke.js"
+    "test": "node test/smoke.js",
+    "build:exe": "pkg . --compress GZip --out-path dist",
+    "docker": "docker compose up --build"
   },
   "dependencies": {
     "express": "^4.21.2",
     "multer": "^2.0.2",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "selfsigned": "^5.5.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "file-sharing",
+    "airdrop-alternative",
+    "local-network",
+    "privacy",
+    "self-hosted"
+  ],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/HelloSamar/Orbit/issues"
+  },
+  "homepage": "https://github.com/HelloSamar/Orbit#readme",
+  "bin": "server.js",
+  "optionalDependencies": {
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.5.1"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "package.json"
+    ],
+    "targets": [
+      "node22-win-x64",
+      "node22-macos-arm64",
+      "node22-macos-x64",
+      "node22-linux-x64"
+    ],
+    "ignore": [
+      "node_modules/sharp/**",
+      "node_modules/@img/**"
+    ]
   }
 }

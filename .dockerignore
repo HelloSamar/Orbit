@@ -1,0 +1,9 @@
+node_modules
+dist
+certs
+shared
+.git
+.github
+test
+*.md
+!README.md

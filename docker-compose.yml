@@ -1,0 +1,16 @@
+services:
+  orbit:
+    build: .
+    image: ghcr.io/hellosamar/orbit:latest
+    ports:
+      - "3000:3000"
+    environment:
+      # Your computer's LAN IP, so the QR code points at the right address (e.g. 192.168.1.20)
+      ORBIT_HOST: "${ORBIT_HOST:-}"
+      # random = new 6-digit PIN each start (shown in `docker compose logs`); set your own, or 0 for none
+      ORBIT_PIN: "${ORBIT_PIN:-random}"
+      ORBIT_HTTPS: "${ORBIT_HTTPS:-0}"
+    # Shared files live in RAM only and vanish when the container stops.
+    tmpfs:
+      - /app/shared
+    restart: unless-stopped

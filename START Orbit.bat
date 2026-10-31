@@ -3,7 +3,7 @@ chcp 65001 >nul
 title Orbit
 color 05
 echo.
-echo  ◉  ORBIT 2.0
+echo  ◉  ORBIT 1.0
 echo  Private sharing for your own devices
 echo  ─────────────────────────────────────
 echo.
@@ -12,6 +12,7 @@ if %errorlevel% neq 0 (
     color 0C
     echo  [ERROR] Node.js not installed!
     echo  Download from: https://nodejs.org
+    echo  ^(or use the ready-made orbit-win-x64.exe from the Releases page^)
     echo.
     pause & exit /b 1
 )
@@ -28,16 +29,9 @@ if not exist node_modules (
 )
 
 if not defined PORT set PORT=3000
-if not defined ORBIT_PIN (
-    set /p ORBIT_PIN= Set a PIN to protect Orbit ^(press Enter to skip^): 
-)
-if defined ORBIT_PIN (echo  PIN protection: ON) else (echo  PIN protection: OFF - anyone on your Wi-Fi can use Orbit)
-echo.
-
-start /b powershell -NoProfile -Command "Start-Sleep -Seconds 2; Start-Process 'http://localhost:%PORT%'"
-echo  Starting... browser opens in 2 seconds.
+set ORBIT_OPEN=1
+echo  Starting... your browser opens automatically.
 echo  Keep this window open. Ctrl+C to stop.
 echo.
 node server.js
 pause
-

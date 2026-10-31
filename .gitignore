@@ -1,7 +1,7 @@
 node_modules/
+dist/
+certs/
 .env
 npm-debug.log*
 shared/*
 !shared/.gitkeep
-
-

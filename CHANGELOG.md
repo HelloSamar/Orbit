@@ -1,36 +1,29 @@
 # Changelog
 
-## 2.0.0
-### Security
-- Device IDs are now secret; other devices only see a hashed public ID (fixes interception of private transfers)
-- Optional PIN login (`ORBIT_PIN`) with rate limiting
-- Cross-site request blocking, security headers, filename sanitization, per-IP rate limit
-- Only the uploader (or accepted target) can delete/rename files; history is private per device
+## 1.0.0
+First stable release.
 
-### Large files
-- No per-file or total size limit by default (set `ORBIT_MAX_FILE_MB` / `ORBIT_STORAGE_GB` to add one); uploads are refused only if the host disk is full
-- Disabled Node's 5-minute request timeout so multi-GB uploads on slow Wi-Fi don't fail
+### Core
+- Share files, text and clipboard between your own devices over your local network — any browser, nothing to install on the phone
+- Send to everyone or one device (receiver accepts or declines), drag-and-drop, progress, rename, delete, gallery, history
+- No file-size limit by default (only free disk space); Node's 5-minute request timeout disabled so multi-GB uploads work
 
-### Fixes
-- Texts from other devices now appear automatically
-- Failed/oversized uploads show an error instead of "Uploaded!"
-- Accepting several files downloads all of them
-- Storage cap enforced; orphaned files cleaned on restart; expired files remove pending transfers
+### Security & privacy
+- Secret device IDs with hashed public IDs (private transfers can't be intercepted)
+- PIN login with rate limiting; random 6-digit PIN option (`ORBIT_PIN=random`, default prompt in a terminal)
+- Optional HTTPS (auto self-signed certificate, or bring your own with `ORBIT_CERT`/`ORBIT_KEY`)
+- Strict Content-Security-Policy, cross-site request blocking, security headers, filename sanitising
+- Only the uploader (or accepted target) can delete/rename; history is private per device
+- Zero logs; downloads never cached; shared files wiped on Ctrl+C, window close, or exit, and on next start after a hard kill
+
+### Quality
+- Gallery uses fast in-memory thumbnails (`sharp`, optional) with automatic fallback to the original
+- Code split into `src/` modules and a `public/` web app instead of one 1,300-line file
+- Reliable uploads (real error messages, 413/507 handling), all accepted files download, texts sync live
 - QR/LAN address skips virtual adapters (VirtualBox, Docker, WSL); `ORBIT_HOST` override
-- Unicode filenames, clipboard copy on http, rename cancel, duplicate accept prompts, zoom accessibility
-- Clean shutdown and clear port-in-use message
+- Unicode filenames, clipboard copy on http, clean shutdown, clear port-in-use message
 
-### Project
-- Multer 2.x, Node 18+ engines, `dev`/`check`/`test` scripts, smoke tests, CI, LICENSE, rewritten README
-- `START Orbit.bat`: installs dependencies on first run, optional PIN prompt, respects `PORT`
-
-### Privacy (2.0.0)
-- Downloads are never cached by the browser (`Cache-Control: no-store`)
-- Shared files are wiped on Ctrl+C, closing the console window, and any normal exit; any leftovers from a hard kill are removed on next start
-- Orbit writes no log files; history/texts live in memory only
-
-
-
-
-
-
+### Distribution
+- Standalone binaries (Windows, macOS, Linux) and a Docker image (`docker compose up`)
+- Release workflow builds both on every `v*` tag; CI on Node 18/20/22; end-to-end smoke tests
+- `START Orbit.bat` / `START Orbit.sh` install dependencies on first run and open the browser
