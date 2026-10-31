@@ -16,7 +16,7 @@
     "dev": "node --watch server.js",
     "check": "node --check server.js",
     "test": "node test/smoke.js",
-    "build:exe": "pkg . --compress GZip --out-path dist",
+    "build:exe": "pkg . --no-bytecode --public-packages \"*\" --public --out-path dist",
     "docker": "docker compose up --build"
   },
   "dependencies": {
