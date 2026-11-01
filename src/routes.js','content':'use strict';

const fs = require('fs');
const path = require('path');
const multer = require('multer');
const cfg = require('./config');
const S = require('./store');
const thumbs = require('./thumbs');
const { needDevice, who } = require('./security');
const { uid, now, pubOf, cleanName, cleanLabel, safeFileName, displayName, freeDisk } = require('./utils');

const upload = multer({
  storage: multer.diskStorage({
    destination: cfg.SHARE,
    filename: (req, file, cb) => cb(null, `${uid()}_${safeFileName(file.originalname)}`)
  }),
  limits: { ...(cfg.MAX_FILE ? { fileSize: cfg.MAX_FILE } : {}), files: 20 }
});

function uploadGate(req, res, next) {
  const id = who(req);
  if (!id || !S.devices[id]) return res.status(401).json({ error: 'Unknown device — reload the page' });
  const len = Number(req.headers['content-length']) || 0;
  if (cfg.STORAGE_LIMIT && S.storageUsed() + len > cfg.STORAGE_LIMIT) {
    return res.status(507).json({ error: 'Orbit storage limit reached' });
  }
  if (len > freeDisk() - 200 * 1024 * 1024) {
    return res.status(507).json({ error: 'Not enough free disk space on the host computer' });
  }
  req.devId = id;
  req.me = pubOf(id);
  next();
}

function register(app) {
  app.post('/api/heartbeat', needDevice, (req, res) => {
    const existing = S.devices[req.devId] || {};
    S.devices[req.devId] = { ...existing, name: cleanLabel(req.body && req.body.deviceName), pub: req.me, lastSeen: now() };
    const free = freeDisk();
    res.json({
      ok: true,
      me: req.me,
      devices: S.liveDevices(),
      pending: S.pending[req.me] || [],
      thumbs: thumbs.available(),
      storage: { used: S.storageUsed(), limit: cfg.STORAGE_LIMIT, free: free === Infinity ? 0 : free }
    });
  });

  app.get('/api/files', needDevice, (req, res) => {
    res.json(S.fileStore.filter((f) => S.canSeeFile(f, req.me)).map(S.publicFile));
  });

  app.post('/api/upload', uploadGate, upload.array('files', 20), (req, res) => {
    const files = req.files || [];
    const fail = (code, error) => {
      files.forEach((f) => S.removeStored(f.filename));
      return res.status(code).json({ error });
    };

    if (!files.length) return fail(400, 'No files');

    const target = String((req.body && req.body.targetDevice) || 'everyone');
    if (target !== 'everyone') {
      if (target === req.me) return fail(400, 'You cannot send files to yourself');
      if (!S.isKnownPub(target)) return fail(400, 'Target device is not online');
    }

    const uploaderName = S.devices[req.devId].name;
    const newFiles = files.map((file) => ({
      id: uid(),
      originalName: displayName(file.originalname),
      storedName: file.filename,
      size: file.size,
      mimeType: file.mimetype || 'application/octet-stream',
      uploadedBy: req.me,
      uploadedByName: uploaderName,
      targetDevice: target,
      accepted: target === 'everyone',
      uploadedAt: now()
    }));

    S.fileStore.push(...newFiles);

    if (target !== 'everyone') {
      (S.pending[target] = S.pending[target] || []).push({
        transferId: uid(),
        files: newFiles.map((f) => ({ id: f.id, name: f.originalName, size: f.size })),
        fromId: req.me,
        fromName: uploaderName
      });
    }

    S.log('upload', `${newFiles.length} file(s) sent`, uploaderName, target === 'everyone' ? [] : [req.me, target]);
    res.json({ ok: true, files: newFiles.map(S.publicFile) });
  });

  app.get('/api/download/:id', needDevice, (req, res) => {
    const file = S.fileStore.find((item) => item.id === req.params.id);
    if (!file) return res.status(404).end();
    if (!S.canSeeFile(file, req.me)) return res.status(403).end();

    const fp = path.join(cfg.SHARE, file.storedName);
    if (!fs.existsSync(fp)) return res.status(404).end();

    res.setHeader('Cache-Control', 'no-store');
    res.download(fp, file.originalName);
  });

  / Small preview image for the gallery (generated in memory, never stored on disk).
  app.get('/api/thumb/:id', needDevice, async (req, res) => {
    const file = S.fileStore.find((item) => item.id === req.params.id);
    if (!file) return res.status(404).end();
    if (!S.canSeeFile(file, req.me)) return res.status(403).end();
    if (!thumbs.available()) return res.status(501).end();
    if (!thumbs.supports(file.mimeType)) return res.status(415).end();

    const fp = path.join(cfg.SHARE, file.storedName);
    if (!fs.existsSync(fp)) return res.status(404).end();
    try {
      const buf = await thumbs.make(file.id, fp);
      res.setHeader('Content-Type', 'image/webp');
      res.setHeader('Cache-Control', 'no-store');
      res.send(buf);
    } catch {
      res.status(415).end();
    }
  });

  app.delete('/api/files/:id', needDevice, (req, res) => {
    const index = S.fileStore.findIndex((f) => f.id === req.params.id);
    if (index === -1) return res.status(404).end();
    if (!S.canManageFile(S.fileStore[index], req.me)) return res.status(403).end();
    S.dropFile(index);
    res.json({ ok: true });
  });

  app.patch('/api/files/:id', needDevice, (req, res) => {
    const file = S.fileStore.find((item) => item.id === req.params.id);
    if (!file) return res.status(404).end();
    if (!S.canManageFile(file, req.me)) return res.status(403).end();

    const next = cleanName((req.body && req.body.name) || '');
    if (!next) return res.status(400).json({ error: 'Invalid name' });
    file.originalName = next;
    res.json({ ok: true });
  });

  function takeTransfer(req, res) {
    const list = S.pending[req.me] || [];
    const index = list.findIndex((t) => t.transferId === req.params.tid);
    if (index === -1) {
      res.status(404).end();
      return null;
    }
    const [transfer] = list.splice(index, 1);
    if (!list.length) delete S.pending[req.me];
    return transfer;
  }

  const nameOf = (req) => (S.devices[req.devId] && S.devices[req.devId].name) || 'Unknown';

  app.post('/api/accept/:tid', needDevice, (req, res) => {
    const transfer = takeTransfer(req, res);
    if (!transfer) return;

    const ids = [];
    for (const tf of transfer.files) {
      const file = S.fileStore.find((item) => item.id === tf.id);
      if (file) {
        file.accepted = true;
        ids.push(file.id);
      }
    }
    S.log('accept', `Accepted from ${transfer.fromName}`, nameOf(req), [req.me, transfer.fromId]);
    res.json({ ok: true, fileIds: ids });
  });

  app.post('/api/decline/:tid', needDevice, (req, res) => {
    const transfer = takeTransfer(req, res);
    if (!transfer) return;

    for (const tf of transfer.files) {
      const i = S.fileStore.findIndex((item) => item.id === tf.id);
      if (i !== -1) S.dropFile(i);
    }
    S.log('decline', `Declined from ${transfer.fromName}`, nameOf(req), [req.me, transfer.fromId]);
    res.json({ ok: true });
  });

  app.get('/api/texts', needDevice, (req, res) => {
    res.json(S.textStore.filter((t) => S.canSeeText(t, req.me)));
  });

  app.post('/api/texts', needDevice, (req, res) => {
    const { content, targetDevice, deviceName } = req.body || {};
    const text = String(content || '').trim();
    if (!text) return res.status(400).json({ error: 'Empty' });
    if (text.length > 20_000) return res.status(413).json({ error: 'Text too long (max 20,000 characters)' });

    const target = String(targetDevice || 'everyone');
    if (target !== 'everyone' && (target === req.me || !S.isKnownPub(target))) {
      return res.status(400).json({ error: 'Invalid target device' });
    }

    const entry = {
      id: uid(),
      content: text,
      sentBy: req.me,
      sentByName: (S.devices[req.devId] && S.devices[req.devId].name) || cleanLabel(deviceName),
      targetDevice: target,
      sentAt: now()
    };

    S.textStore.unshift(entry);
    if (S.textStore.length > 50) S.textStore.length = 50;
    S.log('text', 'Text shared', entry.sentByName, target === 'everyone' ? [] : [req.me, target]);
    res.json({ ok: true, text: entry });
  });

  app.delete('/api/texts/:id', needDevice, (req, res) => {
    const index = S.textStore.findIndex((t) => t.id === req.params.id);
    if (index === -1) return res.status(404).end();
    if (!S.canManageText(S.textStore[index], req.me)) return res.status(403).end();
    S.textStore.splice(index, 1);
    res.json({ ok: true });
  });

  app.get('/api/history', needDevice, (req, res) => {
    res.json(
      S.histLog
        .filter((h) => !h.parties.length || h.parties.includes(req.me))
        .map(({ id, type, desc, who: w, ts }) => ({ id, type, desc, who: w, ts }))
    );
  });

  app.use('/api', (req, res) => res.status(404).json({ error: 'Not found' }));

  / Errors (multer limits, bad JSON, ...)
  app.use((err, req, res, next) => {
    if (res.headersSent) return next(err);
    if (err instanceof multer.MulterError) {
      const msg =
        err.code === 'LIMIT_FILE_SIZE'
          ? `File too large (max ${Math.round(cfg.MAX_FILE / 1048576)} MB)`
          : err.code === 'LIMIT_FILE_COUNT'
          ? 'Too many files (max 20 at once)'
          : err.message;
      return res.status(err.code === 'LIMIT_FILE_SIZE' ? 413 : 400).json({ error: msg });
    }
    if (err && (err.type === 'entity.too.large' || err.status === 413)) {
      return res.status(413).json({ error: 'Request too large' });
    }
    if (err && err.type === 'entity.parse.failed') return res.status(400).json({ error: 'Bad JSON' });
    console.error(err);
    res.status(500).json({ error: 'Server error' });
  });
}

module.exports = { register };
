@@ -1,0 +1,79 @@
+    function genId() {
+      var a = new Uint8Array(16);
+      crypto.getRandomValues(a);
+      return Array.from(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+    }
+    function esc(v) {
+      return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function fmtSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+      return (bytes / 1073741824).toFixed(2) + ' GB';
+    }
+    function fmtTime(ts) {
+      var diff = Date.now() - ts;
+      if (diff < 60000) return 'just now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+      return Math.floor(diff / 86400000) + 'd ago';
+    }
+    function fileIcon(mime, name) {
+      if (mime && mime.startsWith('image/')) return '🖼';
+      if (mime && mime.startsWith('video/')) return '🎬';
+      if (mime && mime.startsWith('audio/')) return '🎵';
+      if (mime && mime.includes('pdf')) return '📄';
+      if ((mime && mime.includes('zip')) || /\.(zip|rar|7z)$/i.test(name)) return '📦';
+      if ((mime && mime.includes('word')) || /\.(docx|doc)$/i.test(name)) return '📝';
+      if ((mime && mime.includes('sheet')) || /\.(xlsx|csv)$/i.test(name)) return '📊';
+      return '📁';
+    }
+    function histIcon(type) {
+      return { upload: '⬆', accept: '✅', decline: '❌', text: '💬' }[type] || '•';
+    }
+
+    var DID = localStorage.getItem('orbit_did');
+    if (!DID || !/^[A-Za-z0-9_-]{8,64}$/.test(DID)) { DID = genId(); localStorage.setItem('orbit_did', DID); }
+    var DEVICE_SECRET = localStorage.getItem('orbit_device_secret');
+    if (!DEVICE_SECRET || !/^[A-Fa-f0-9]{32,128}$/.test(DEVICE_SECRET)) {
+      DEVICE_SECRET = genId() + genId();
+      localStorage.setItem('orbit_device_secret', DEVICE_SECRET);
+    }
+    function deviceHeaders() {
+      return { 'X-Device-Id': DID, 'X-Device-Secret': DEVICE_SECRET };
+    }
+    var ME = '';
+    var NAME = localStorage.getItem('orbit_name') || '';
+    var currentTab = 'files';
+    var allFiles = [];
+    var allTexts = [];
+    var uploadXHR = null;
+    var galleryImages = [];
+    var lbIndex = 0;
+    var pendingQueue = [];
+    var handledTransfers = {};
+    var processingModal = false;
+    var textStore = {};
+    var pollTimer = null;
+
+    var THUMBS = false;
+    function thumbUrl(id) { return '/api/thumb/' + encodeURIComponent(id) + '?deviceId=' + encodeURIComponent(DID) + '&deviceSecret=' + encodeURIComponent(DEVICE_SECRET); }
+    function dlUrl(id) { return '/api/download/' + encodeURIComponent(id) + '?deviceId=' + encodeURIComponent(DID) + '&deviceSecret=' + encodeURIComponent(DEVICE_SECRET); }
+
+    async function api(method, url, body) {
+      var opts = { method: method, headers: { 'Content-Type': 'application/json', ...deviceHeaders() } };
+      if (body) opts.body = JSON.stringify(body);
+      var r = await fetch(url, opts);
+      if (r.status === 401) { location.reload(); return {}; }
+      var data = await r.json().catch(function () { return {}; });
+      data._status = r.status;
+      return data;
+    }
+
+    function getJSON(url) {
+      return fetch(url, { headers: deviceHeaders() }).then(function (r) {
+        if (r.status === 401) { location.reload(); return []; }
+        return r.json();
+      });
+    }
