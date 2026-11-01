@@ -12,6 +12,8 @@ const sha = (s) => crypto.createHash('sha256').update(String(s)).digest();
 const pubOf = (secret) =>
   crypto.createHash('sha256').update('orbit:' + secret).digest('hex').slice(0, 12);
 
+const WINDOWS_RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+
 function cleanName(s) {
   return String(s)
     .replace(/[\u0000-\u001f\u007f/\\]/g, '')
@@ -24,8 +26,15 @@ function cleanLabel(v, fallback = 'Unknown') {
 }
 
 function safeFileName(name) {
-  const base = path.basename(String(name || 'file')).replace(/[^a-zA-Z0-9_.-]/g, '_');
-  return base.replace(/^[_.]+|_+$/g, '').slice(0, 120) || 'file';
+  let base = path.basename(String(name || 'file'))
+    .replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, '')
+    .replace(/[. ]+$/g, '')
+    .trim();
+
+  const stem = base.replace(/\.[^/.]+$/, '');
+  if (!base || WINDOWS_RESERVED.test(stem)) base = `_${base || 'file'}`;
+
+  return base.slice(0, 120) || 'file';
 }
 
 function displayName(name) {
@@ -35,7 +44,7 @@ function displayName(name) {
     const fixed = Buffer.from(s, 'latin1').toString('utf8');
     if (!fixed.includes('\uFFFD')) s = fixed;
   } catch {}
-  return cleanName(s) || 'file';
+  return safeFileName(s);
 }
 
 function freeDisk() {
