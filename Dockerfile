@@ -1,7 +1,11 @@
 FROM node:22-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+# sharp is an optional image-processing dependency. Installing it under emulated
+# ARM64 (QEMU) can crash during native postinstall, so we skip lifecycle scripts in
+# the production image and let the app gracefully fall back to the original image
+# when sharp is unavailable.
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 COPY . .
 RUN mkdir -p shared certs && chown -R node:node shared certs
 ENV PORT=3000 HOST=0.0.0.0
